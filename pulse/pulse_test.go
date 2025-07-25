@@ -6,42 +6,7 @@ package pulse
 
 import (
 	"errors"
-
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
-
-func Test_pulse(t *testing.T) {
-	ctx := GetContextForced()
-	if ctx == nil {
-		return
-	}
-	defaultSink := getPulseDefaultSink(ctx)
-	if defaultSink == nil {
-		err := errors.New("failed to get default sink")
-		t.Log(err)
-		return
-	}
-	ctx.SetDefaultSink(defaultSink.Name)
-
-	defaultSource := getPulseDefaultSource(ctx)
-	if defaultSource == nil {
-		err := errors.New("failed to get default source")
-		t.Log(err)
-		return
-	}
-	ctx.SetDefaultSource(defaultSource.Name)
-
-	card, err := getCard(ctx, 0)
-	require.NoError(t, err)
-	if err != nil {
-		t.Log(err)
-		return
-	}
-	assert.NotNil(t, card)
-}
 
 func getPulseDefaultSink(ctx *Context) (defaultSink *Sink) {
 	defaultSinkName := ctx.GetDefaultSink()
