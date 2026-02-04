@@ -59,11 +59,21 @@ pa_context_index_cb_t get_index_cb()
   }                                                                     \
   void _get_##TYPE##_info(pa_threaded_mainloop* loop, pa_context *c, int64_t cookie, uint32_t index) \
   {                                                                     \
-    pa_operation_unref(pa_context_get_##TYPE##_info##PA_FUNC_SUFFIX(c, index, receive_##TYPE##_cb, (void*)cookie)); \
+    pa_operation* o = pa_context_get_##TYPE##_info##PA_FUNC_SUFFIX(c, index, receive_##TYPE##_cb, (void*)cookie); \
+    if (o) {                                                            \
+      pa_operation_unref(o);                                            \
+    } else {                                                            \
+      fprintf(stderr, "Failed to get %s info for index %u\n", #TYPE, index); \
+    }                                                                   \
   }                                                                     \
   void _get_##TYPE##_info_list(pa_threaded_mainloop* loop, pa_context* ctx, int64_t cookie) \
   {                                                                     \
-    pa_operation_unref(pa_context_get_##TYPE##_info_list(ctx, receive_##TYPE##_cb, (void*)cookie)); \
+    pa_operation* o = pa_context_get_##TYPE##_info_list(ctx, receive_##TYPE##_cb, (void*)cookie); \
+    if (o) {                                                            \
+      pa_operation_unref(o);                                            \
+    } else {                                                            \
+      fprintf(stderr, "Failed to get %s info list\n", #TYPE);           \
+    }                                                                   \
   }
 
 DEFINE(PA_SUBSCRIPTION_EVENT_SINK, sink, _by_index);
@@ -85,7 +95,12 @@ void receive_server_info_cb(pa_context *c, const pa_server_info *info, void *use
 }
 void _get_server_info(pa_threaded_mainloop* loop, pa_context *c, int64_t cookie)
 {
-    pa_operation_unref(pa_context_get_server_info(c, receive_server_info_cb, (void*)cookie));
+    pa_operation* o = pa_context_get_server_info(c, receive_server_info_cb, (void*)cookie);
+    if (!o) {
+        fprintf(stderr, "Failed to get server info\n");
+        return;
+    }
+    pa_operation_unref(o);
 }
 
 void dpa_context_subscribe_cb(pa_context *c, pa_subscription_event_type_t t, uint32_t idx, void *userdata)
